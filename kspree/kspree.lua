@@ -1,11 +1,8 @@
 --
--- KSpree
+-- KSpree.lua
 --
--- $Id: kspree.lua 239 2007-05-07 17:46:53Z bennz $
--- $Date: 2007-05-07 19:46:53 +0200 (Mon, 07 May 2007) $
--- $Revision: 239 $
---
-version = "1.0.4"
+
+version = "1.0.5"
 
 -- KSpree logic is based on Vetinari's rspree.lua which derives from etadmin_mod.pl
 -- CONSOLE COMMANDS : ksprees, kspeesall, kspreerecords
@@ -14,7 +11,6 @@ version = "1.0.4"
 -- added: spree announcement can be disabled
 -- FIXME: recordMessage() does not work everytime -- FIXED !!!
 -- FIXME: use wait_table[id] ~= nil --FIXED mmmhhh :/ ???
---
 -------------------------------------------------------------------------------------
 -------------------------------CONFIG START------------------------------------------
 
@@ -30,17 +26,24 @@ kspree_announce		= true			-- announce sprees
 kmulti_sound    	= true			-- multi-sounds
 kspree_sound		= true			-- spree-sounds
 
-first_blood			= true			-- display First Blood
-last_blood			= true			-- display Last Blood
+first_blood		= true			-- display First Blood
+last_blood		= true			-- display Last Blood
 
-kmulti_pos      	= "cp"			-- multi + megakill - position
+------
+-- Current available poistions in et:L 2.74
+-- cp = center position: default over the chat in big lettern: only one message is shown, by to many messages some get lost
+-- cpm = log default on the left where the kills are shown, not in console. Only one row is possible
+--
+kmulti_pos      	= "cp"		-- multi + megakill - position
 kmonster_pos    	= "cp"		-- ultra + monster + ludicrous + holy shit - position
 kmultitk_pos		= "cp"		-- multi TK - position
-kspree_pos    		= "cp"			-- killing spree position
-kspree_color  		= "8"			-- killing spree color
+cmd_pos			= "cp"		-- command line position (i.e. !ksprees)
+blood_pos		= "cp"		-- first and last blood position (should chat, but not supported in 2.74)
+kspree_pos    		= "cpm"		-- killing spree position cpm=logs
+kspree_color  		= "8"		-- killing spree color
 
 kmulti_msg      	= "^7!!!! ^1Multi kill ^7> ^7%s ^7< ^1Multi kill^7 !!!!"
-kmega_msg			= "^7!!!! ^1Mega kill ^7> ^7%s ^7< ^1Mega kill^7 !!!!"
+kmega_msg		= "^7!!!! ^1Mega kill ^7> ^7%s ^7< ^1Mega kill^7 !!!!"
 kultra_msg    		= "^7!!! ^1ULTRA KILL ^7> ^7%s ^7< ^1ULTRA KILL^7 !!!"
 kmonster_msg    	= "^7!!! ^1MONSTER KILL ^7>>> ^7%s ^7<<< ^1MONSTER KILL^7 !!!"
 kludicrous_msg		= "^7OMG,^1LUDICROUS KILL ^7>>> ^7%s ^7<<< ^1LUDICROUS KILL^7"
@@ -48,9 +51,9 @@ kholyshit_msg		= "^1H O L Y  S H I T ^7>>> ^7%s ^7<<< ^1H O L Y  S H I T^7"
 kmultitk_msg		= "^7!!! ^1Multi Teamkill ^7> ^7%s ^7< ^1Multi Teamkill^7 !!!"
 
 firstbloodsound		= "sound/misc/firstblood.wav"
-multisound			= "sound/misc/multikill.wav"
-megasound			= "sound/misc/megakill.wav"
-ultrasound			= "sound/misc/ultrakill.wav"
+multisound		= "sound/misc/multikill.wav"
+megasound		= "sound/misc/megakill.wav"
+ultrasound		= "sound/misc/ultrakill.wav"
 monstersound		= "sound/misc/monsterkill.wav"
 ludicroussound		= "sound/misc/ludicrouskill.wav"
 holyshitsound 		= "sound/misc/holyshit.wav"
@@ -61,19 +64,19 @@ dominatingsound		= "sound/misc/dominating.wav"
 godlikesound		= "sound/misc/godlike.wav"
 unstoppablesound	= "sound/misc/unstoppable.wav"
 wickedsicksound		= "sound/misc/wickedsick.wav"
-pottersound			= "sound/misc/potter.wav"
+pottersound		= "sound/misc/potter.wav"
 
 killingspree_private	= false		-- send killingspree message + sound to client only, if set to true
 									-- (You are on a killing spree), all other messages are global messages, like rampage and so on
 
 kspree_cmd_enabled 	= true			-- set to false to ignore the "kspree_cmd"
-kspree_cmd 			= "!spree_record"
+kspree_cmd 		= "!spree_record"
 
-record_cmd 			= "!ksprees"	-- command to print players with most multi,mega,ultra... kills
-stats_cmd  			= "!stats"		-- same as etadmin_mod's "!stats", prints personal killing records (i.e. multi,mega,ultra... kills)
-statsme_cmd			= "!statsme"	-- shows ur personal killing stats (private)
+record_cmd 		= "!ksprees"	-- command to print players with most multi,mega,ultra... kills
+stats_cmd  		= "!stats"		-- same as etadmin_mod's "!stats", prints personal killing records (i.e. multi,mega,ultra... kills)
+statsme_cmd		= "!statsme"	-- shows ur personal killing stats (private)
 
-srv_record 			= true			-- set to true, if u want to save killing stats
+srv_record 		= true			-- set to true, if u want to save killing stats
 record_last_nick 	= true			-- set to true to keep the last known nick a guid has
 records_expire		= 60*60*24*5  	-- in seconds! 60*60*24*5 == 5 days
 
@@ -302,7 +305,8 @@ function et_Print(text)
                 local msg = string.format("^7Longest killing spree: %s^7 with %d kills!%s",
                                             re_name, kmax_spree, longest)
                 if kspree_announce then
-                	et.trap_SendConsoleCommand(et.EXEC_APPEND, "qsay \""..msg.."^7\"\n")
+                	sayClients(kspree_pos,string.format(msg))
+                	--et.trap_SendConsoleCommand(et.EXEC_APPEND, "qsay \""..msg.."^7\"\n")
                 end
             end
             if srv_record then
@@ -322,7 +326,8 @@ function et_Print(text)
         end
         if last_b ~= "" and last_blood then
         	msg = string.format("^7And the final kill of this round goes to: %s ^7!", last_b )
-        	et.trap_SendConsoleCommand(et.EXEC_APPEND, "qsay \""..msg.."^7\"\n")
+        	--et.trap_SendConsoleCommand(et.EXEC_APPEND, "qsay \""..msg.."^7\"\n")
+        	sayClients(blood_pos,string.format(msg))
         end
         return(nil)
     end
@@ -441,8 +446,7 @@ function et_Obituary(victim, killer, mod)
             end
 
             if first_blood then
-            	sayClients(kmonster_pos, string.format("%s ^1drew first BLOOD ^7!", playerName(killer) ))
-            	--et.G_globalSound(firstbloodsound)
+            	sayClients(blood_pos, string.format("%s ^1drew first BLOOD ^7!", playerName(killer) ))
             	soundClients(firstbloodsound)
             	first_blood = false
             end
@@ -531,42 +535,34 @@ function checkKSprees(id)
         if killingspree_private and client_msg[id] then
             local craap = string.format("%s ^%s: You are on a killing spree! (^75 kills in a row^%s)",
                                         playerName(id), kspree_color, kspree_color)
-            et.trap_SendServerCommand( id, "cp \" "..craap.." \"\n")
-            --et.G_Sound( id ,  et.G_SoundIndex("sound/misc/killingspree.wav"))
+            et.trap_SendServerCommand( id, kspree_pos.." "..craap.." \"\n")
             et.G_ClientSound(id, killingspreesound)
         else
             sayClients(kspree_pos, string.format("%s^%s %s (^7%d kills in a row^%s)",
             playerName(id), kspree_color, spree, killing_sprees[id], kspree_color))
             if kspree_sound then
                 soundClients(killingspreesound)
-                --et.G_globalSound(killingspreesound)
             end
         end
     else
         sayClients(kspree_pos, string.format("%s^%s %s (^7%d kills in a row^%s)",
             playerName(id), kspree_color, spree, killing_sprees[id], kspree_color))
         if spree_id == 10 and kspree_sound then
-            --et.G_globalSound(rampagesound)
             soundClients(rampagesound)
 
         elseif spree_id == 15 and kspree_sound then
-            --et.G_globalSound(dominatingsound)
             soundClients(dominatingsound)
 
         elseif spree_id == 20 and kspree_sound then
-            --et.G_globalSound(unstoppablesound)
             soundClients(unstoppablesound)
 
         elseif spree_id == 25 and kspree_sound then
-            --et.G_globalSound(godlikesound)
             soundClients(godlikesound)
 
         elseif spree_id == 30 and kspree_sound then
-            --et.G_globalSound(wickedsicksound)
             soundClients(wickedsicksound)
 
         elseif spree_id == 35 and kspree_sound then
-            --et.G_globalSound(pottersound)
             soundClients(pottersound)
         end
     end --endif spree_id
@@ -588,7 +584,6 @@ function et_RunFrame(levelTime)
          	if kmulti_announce then
          		sayClients(kmulti_pos, string.format(kmulti_msg, m_name))
          		if kmulti_sound then
-         			--et.G_globalSound(multisound)
          			soundClients(multisound)
          		end
          	end
@@ -601,7 +596,6 @@ function et_RunFrame(levelTime)
          	if kmulti_announce then
          		sayClients(kmulti_pos, string.format(kmega_msg, m_name))
          		if kmulti_sound then
-         			--et.G_globalSound(megasound)
          			soundClients(megasound)
          		end
          	end
@@ -614,7 +608,6 @@ function et_RunFrame(levelTime)
          	if kmulti_announce then
          		sayClients(kmonster_pos, string.format(kultra_msg, m_name))
          		if kmulti_sound then
-         			--et.G_globalSound(ultrasound)
          			soundClients(ultrasound)
          		end
          	end
@@ -627,7 +620,6 @@ function et_RunFrame(levelTime)
          	if kmulti_announce then
          		sayClients(kmonster_pos, string.format(kmonster_msg, m_name))
          		if kmulti_sound then
-         			--et.G_globalSound(monstersound)
          			soundClients(monstersound)
          		end
          	end
@@ -640,7 +632,6 @@ function et_RunFrame(levelTime)
          	if kmulti_announce then
          		sayClients(kmonster_pos, string.format(kludicrous_msg, m_name))
          		if kmulti_sound then
-         			--et.G_globalSound(ludicroussound)
          			soundClients(ludicroussound)
          		end
          	end
@@ -653,7 +644,6 @@ function et_RunFrame(levelTime)
 	     	if kmulti_announce then
          		sayClients(kmonster_pos, string.format(kholyshit_msg, m_name))
          		if kmulti_sound then
-         			--et.G_globalSound(holyshitsound)
          			soundClients(holyshitsound)
          		end
          	end
@@ -704,16 +694,17 @@ function et_ClientCommand(id, command)
                 all_msg = string.format(" ^1[^7overall: %s^1 (^7%d^1) @ %s^1]",
                                     all_max[3], all_max[1], os.date(date_fmt, all_max[2]))
             end
-            et.trap_SendConsoleCommand(et.EXEC_APPEND, "qsay \"^1kspree_record: "..map_msg..all_msg.."^7\"\n")
+            sayClients(cmd_pos, string.format("^1kspree_record: "..map_msg..all_msg.."^7\"\n"))
         elseif et.trap_Argv(1) == record_cmd and srv_record then
             local rec_msg     = recordMessage()
-            et.trap_SendConsoleCommand(et.EXEC_APPEND, "qsay \"^1kspree_record: "..rec_msg.."^7\"\n")
+            sayClients(cmd_pos, string.format("^1kspree_record: "..rec_msg.."^7\"\n"))
         elseif et.trap_Argv(1) == stats_cmd and srv_record then
             local stats_msg = statsMessage(id)
-	    	et.trap_SendConsoleCommand(et.EXEC_APPEND, "qsay \"^3stats: ^7"..stats_msg.."^7\"\n")
+	    	sayClients(cmd_pos, string.format("^3stats: ^7"..stats_msg.."^7\"\n"))
 	    elseif et.trap_Argv(1) == statsme_cmd and srv_record then
 	    	local statsme_msg = statsMessage(id)
-	    	et.trap_SendServerCommand( id, "cp \"^3statsme: ^7"..statsme_msg.." ^7\"\n")
+	    	--et.trap_SendServerCommand( id, cmd_pos.."^3statsme: ^7"..statsme_msg.." ^7\"\n")
+	    	et.trap_SendServerCommand( id, "cp \"^3statsme: ^7"..statsme_msg.." ^7\"\n") --should be fixed here
 	    	return(1)
 		end -- end elseif...
     end -- et.trap_Argv(0) == "say"
