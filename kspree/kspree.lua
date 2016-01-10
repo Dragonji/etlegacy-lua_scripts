@@ -15,7 +15,6 @@ version = "1.0.5"
 -- FIXME: recordMessage() does not work everytime -- FIXED !!!
 -- FIXME: use wait_table[id] ~= nil --FIXED mmmhhh :/ ???
 -- FIXME: Own killing spree is not shown (You are on a killing spree), only spree sound
--- FIXME: The player himself dont hear the own spree sound from 30 (current settings: godlike)
 -------------------------------------------------------------------------------------
 -------------------------------CONFIG START------------------------------------------
 
@@ -451,7 +450,7 @@ function et_Obituary(victim, killer, mod)
             end
 
             if first_blood then
-            	sayClients(kmonster_pos, string.format("%s ^1drew first BLOOD ^7!", playerName(killer) ))
+            	sayClients(blood_pos, string.format("%s ^1drew first BLOOD ^7!", playerName(killer) ))
             	--et.G_globalSound(firstbloodsound)
             	soundClients(firstbloodsound)
             	first_blood = false
@@ -714,19 +713,16 @@ function et_ClientCommand(id, command)
                 all_msg = string.format(" ^1[^7overall: %s^1 (^7%d^1) @ %s^1]",
                                     all_max[3], all_max[1], os.date(date_fmt, all_max[2]))
             end
-            --et.trap_SendConsoleCommand(et.EXEC_APPEND, "qsay \"^1kspree_record: "..map_msg..all_msg.."^7\"\n")
-            sayClients(cmd_pos, string.format("\"^1kspree_record: "..map_msg..all_msg.."^7\"\n"))
+            sayClients(cmd_pos, string.format("^1kspree_record: "..map_msg..all_msg.."^7\"\n"))
         elseif et.trap_Argv(1) == record_cmd and srv_record then
             local rec_msg     = recordMessage()
-            --et.trap_SendConsoleCommand(et.EXEC_APPEND, "qsay \"^1kspree_record: "..rec_msg.."^7\"\n")
-            sayClients(cmd_pos, string.format("\"^1kspree_record: "..rec_msg.."^7\"\n"))
+            sayClients(cmd_pos, string.format("^1kspree_record: "..rec_msg.."^7\"\n"))
         elseif et.trap_Argv(1) == stats_cmd and srv_record then
             local stats_msg = statsMessage(id)
-	    	--et.trap_SendConsoleCommand(et.EXEC_APPEND, "qsay \"^3stats: ^7"..stats_msg.."^7\"\n")
-	    	sayClients(cmd_pos, string.format("\"^3stats: ^7"..stats_msg.."^7\"\n"))
+	    	sayClients(cmd_pos, string.format("^3stats: ^7"..stats_msg.."^7\"\n"))
 	    elseif et.trap_Argv(1) == statsme_cmd and srv_record then
 	    	local statsme_msg = statsMessage(id)
-	    	et.trap_SendServerCommand( id, cmd_pos.."\"^3statsme: ^7"..statsme_msg.." ^7\"\n")
+	    	et.trap_SendServerCommand( id, cmd_pos.."^3statsme: ^7"..statsme_msg.." ^7\"\n")
 	    	return(1)
 		end -- end elseif...
     end -- et.trap_Argv(0) == "say"
