@@ -1,10 +1,7 @@
 --
--- KSpree
+-- KSpree.lua
 --
--- $Id: kspree.lua 239 2007-05-07 17:46:53Z bennz $
--- $Date: 2007-05-07 19:46:53 +0200 (Mon, 07 May 2007) $
--- $Revision: 239 $
---
+
 version = "1.0.5"
 
 -- KSpree logic is based on Vetinari's rspree.lua which derives from etadmin_mod.pl
@@ -14,7 +11,6 @@ version = "1.0.5"
 -- added: spree announcement can be disabled
 -- FIXME: recordMessage() does not work everytime -- FIXED !!!
 -- FIXME: use wait_table[id] ~= nil --FIXED mmmhhh :/ ???
--- FIXME: Own killing spree is not shown (You are on a killing spree), only spree sound
 -------------------------------------------------------------------------------------
 -------------------------------CONFIG START------------------------------------------
 
@@ -707,7 +703,8 @@ function et_ClientCommand(id, command)
 	    	sayClients(cmd_pos, string.format("^3stats: ^7"..stats_msg.."^7\"\n"))
 	    elseif et.trap_Argv(1) == statsme_cmd and srv_record then
 	    	local statsme_msg = statsMessage(id)
-	    	et.trap_SendServerCommand( id, cmd_pos.."^3statsme: ^7"..statsme_msg.." ^7\"\n")
+	    	--et.trap_SendServerCommand( id, cmd_pos.."^3statsme: ^7"..statsme_msg.." ^7\"\n")
+	    	et.trap_SendServerCommand( id, "cp \"^3statsme: ^7"..statsme_msg.." ^7\"\n") --should be fixed here
 	    	return(1)
 		end -- end elseif...
     end -- et.trap_Argv(0) == "say"
