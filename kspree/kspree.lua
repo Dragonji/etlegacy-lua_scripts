@@ -451,7 +451,6 @@ function et_Obituary(victim, killer, mod)
 
             if first_blood then
             	sayClients(blood_pos, string.format("%s ^1drew first BLOOD ^7!", playerName(killer) ))
-            	--et.G_globalSound(firstbloodsound)
             	soundClients(firstbloodsound)
             	first_blood = false
             end
@@ -540,42 +539,34 @@ function checkKSprees(id)
         if killingspree_private and client_msg[id] then
             local craap = string.format("%s ^%s: You are on a killing spree! (^75 kills in a row^%s)",
                                         playerName(id), kspree_color, kspree_color)
-            et.trap_SendServerCommand( id, "cp \" "..craap.." \"\n")
-            --et.G_Sound( id ,  et.G_SoundIndex("sound/misc/killingspree.wav"))
+            et.trap_SendServerCommand( id, kspree_pos.." "..craap.." \"\n")
             et.G_ClientSound(id, killingspreesound)
         else
             sayClients(kspree_pos, string.format("%s^%s %s (^7%d kills in a row^%s)",
             playerName(id), kspree_color, spree, killing_sprees[id], kspree_color))
             if kspree_sound then
                 soundClients(killingspreesound)
-                --et.G_globalSound(killingspreesound)
             end
         end
     else
         sayClients(kspree_pos, string.format("%s^%s %s (^7%d kills in a row^%s)",
             playerName(id), kspree_color, spree, killing_sprees[id], kspree_color))
         if spree_id == 10 and kspree_sound then
-            --et.G_globalSound(rampagesound)
             soundClients(rampagesound)
 
         elseif spree_id == 15 and kspree_sound then
-            --et.G_globalSound(dominatingsound)
             soundClients(dominatingsound)
 
         elseif spree_id == 20 and kspree_sound then
-            --et.G_globalSound(unstoppablesound)
             soundClients(unstoppablesound)
 
         elseif spree_id == 25 and kspree_sound then
-            --et.G_globalSound(godlikesound)
             soundClients(godlikesound)
 
         elseif spree_id == 30 and kspree_sound then
-            --et.G_globalSound(wickedsicksound)
             soundClients(wickedsicksound)
 
         elseif spree_id == 35 and kspree_sound then
-            --et.G_globalSound(pottersound)
             soundClients(pottersound)
         end
     end --endif spree_id
@@ -597,7 +588,6 @@ function et_RunFrame(levelTime)
          	if kmulti_announce then
          		sayClients(kmulti_pos, string.format(kmulti_msg, m_name))
          		if kmulti_sound then
-         			--et.G_globalSound(multisound)
          			soundClients(multisound)
          		end
          	end
@@ -610,7 +600,6 @@ function et_RunFrame(levelTime)
          	if kmulti_announce then
          		sayClients(kmulti_pos, string.format(kmega_msg, m_name))
          		if kmulti_sound then
-         			--et.G_globalSound(megasound)
          			soundClients(megasound)
          		end
          	end
@@ -623,7 +612,6 @@ function et_RunFrame(levelTime)
          	if kmulti_announce then
          		sayClients(kmonster_pos, string.format(kultra_msg, m_name))
          		if kmulti_sound then
-         			--et.G_globalSound(ultrasound)
          			soundClients(ultrasound)
          		end
          	end
@@ -636,7 +624,6 @@ function et_RunFrame(levelTime)
          	if kmulti_announce then
          		sayClients(kmonster_pos, string.format(kmonster_msg, m_name))
          		if kmulti_sound then
-         			--et.G_globalSound(monstersound)
          			soundClients(monstersound)
          		end
          	end
@@ -649,7 +636,6 @@ function et_RunFrame(levelTime)
          	if kmulti_announce then
          		sayClients(kmonster_pos, string.format(kludicrous_msg, m_name))
          		if kmulti_sound then
-         			--et.G_globalSound(ludicroussound)
          			soundClients(ludicroussound)
          		end
          	end
@@ -662,7 +648,6 @@ function et_RunFrame(levelTime)
 	     	if kmulti_announce then
          		sayClients(kmonster_pos, string.format(kholyshit_msg, m_name))
          		if kmulti_sound then
-         			--et.G_globalSound(holyshitsound)
          			soundClients(holyshitsound)
          		end
          	end
